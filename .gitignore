@@ -9,3 +9,6 @@ database.sqlite3
 **/.DS_Store
 venv/
 /logs/*
+
+# don't ignore
+!.gitkeep

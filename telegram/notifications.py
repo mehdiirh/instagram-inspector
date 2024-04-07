@@ -11,15 +11,19 @@ async def send_telegram_notifications(bot: TelegramClient):
     while True:
         new_messages = telegram_messages(status=0)
         for message in new_messages:
-            await bot.send_message(
-                int(settings.TELEGRAM_LOG_CHANNEL),
-                message.text,
-                file=message.media_url,
-                parse_mode="html",
-            )
+            try:
+                await bot.send_message(
+                    int(settings.TELEGRAM_LOG_CHANNEL),
+                    message.text,
+                    file=message.media_url,
+                    parse_mode="html",
+                )
 
-            message.status = 1
-            update_telegram_message(message)
-            await sleep(3)
+                message.status = 1
+                update_telegram_message(message)
+            except:
+                continue
+            finally:
+                await sleep(3)
 
         await sleep(10)

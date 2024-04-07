@@ -196,6 +196,7 @@ async def inspect_query(callback: CallbackQuery):
         )
         raise events.StopPropagation
 
+    await callback.delete()
     wait_message: Message = await callback.respond(
         f"**Processing user** `{user_username}` "
         f"**with** `{inspector.username}`**...**",

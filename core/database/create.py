@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, Optional
 
 from core.database import get
+from core.database.get import get_inspector, get_inspected_user
 from core.database.utils import Cursor
-from core.datatypes import TelegramMessage
+from core.datatypes import TelegramMessage, Inspector
 
 if TYPE_CHECKING:
     from instagrapi.types import UserShort
@@ -51,6 +52,53 @@ def create_following_for_inspected_user(
             cursor.connection.commit()
 
         return get.get_following(inspected_user, following_details.pk)
+
+
+def create_inspector(
+    username: str,
+    password: str,
+) -> "Inspector":
+    does_exist = get_inspector(username)
+    if does_exist:
+        raise ValueError("an inspector with this username already exists in database")
+
+    with Cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO inspectors (username, password) VALUES (?, ?)",
+            (
+                username.lower(),
+                password,
+            ),
+        )
+        cursor.connection.commit()
+
+    return get_inspector(username)
+
+
+def create_inspected_user(
+    username: str,
+    inspector: [int, Inspector],
+) -> "UnderInspect":
+    does_exist = get_inspected_user(username)
+    if does_exist:
+        raise ValueError(
+            "an inspected user with this username already exists in database"
+        )
+
+    if isinstance(inspector, Inspector):
+        inspector = inspector.id
+
+    with Cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO under_inspect (username, inspector) VALUES (?, ?)",
+            (
+                username.lower(),
+                inspector,
+            ),
+        )
+        cursor.connection.commit()
+
+    return get_inspected_user(username)
 
 
 def create_telegram_notification(

@@ -28,7 +28,9 @@ def get_client(
         client.login(inspector.username, inspector.password)
         client.login()
     except Exception:
-        client.login(inspector.username, inspector.password)
+        client.login(
+            inspector.username, inspector.password, verification_code=verification_code
+        )
         inspector.settings = json.dumps(client.get_settings())
         inspector.ig_pk = client.user_id
         database.update.update_inspector(inspector)
@@ -46,23 +48,25 @@ def get_user_short_object_by_pk(
 
 
 def save_follower_following_count_changes(
-    inspected_user: UnderInspect, user_info: "User"
+    inspected_user: UnderInspect, user_info: "User", silent=False
 ) -> None:
-    if inspected_user.follower_count != user_info.follower_count:
-        messages.follower_count_change(
-            inspected_user,
-            inspected_user.follower_count,
-            user_info.follower_count,
-            save=True,
-        )
 
-    if inspected_user.following_count != user_info.following_count:
-        messages.following_count_change(
-            inspected_user,
-            inspected_user.following_count,
-            user_info.following_count,
-            save=True,
-        )
+    if not silent:
+        if inspected_user.follower_count != user_info.follower_count:
+            messages.follower_count_change(
+                inspected_user,
+                inspected_user.follower_count,
+                user_info.follower_count,
+                save=True,
+            )
+
+        if inspected_user.following_count != user_info.following_count:
+            messages.following_count_change(
+                inspected_user,
+                inspected_user.following_count,
+                user_info.following_count,
+                save=True,
+            )
 
     inspected_user.follower_count = user_info.follower_count
     inspected_user.following_count = user_info.following_count
@@ -72,6 +76,7 @@ def save_follower_following_count_changes(
 def save_follower_changes(
     inspected_user: UnderInspect,
     user_follower_list: list["UserShort"],
+    silent=False,
 ) -> None:
     saved_followers = database.get.fetch_followers(inspected_user)
 
@@ -86,18 +91,20 @@ def save_follower_changes(
         follower_object = database.create.create_follower_for_inspected_user(
             inspected_user, follower_details
         )
-        if follower_object:
+        if not silent and follower_object:
             messages.new_follower(inspected_user, follower_object, save=True)
 
     for unfollower in new_unfollows:
         get_user_short_object_by_pk(user_follower_list, unfollower)
         unfollower_object = database.delete.delete_follower(inspected_user, unfollower)
-        messages.new_unfollowed_by(inspected_user, unfollower_object)
+        if not silent:
+            messages.new_unfollowed_by(inspected_user, unfollower_object, save=True)
 
 
 def save_following_changes(
     inspected_user: UnderInspect,
     user_following_list: list["UserShort"],
+    silent=False,
 ) -> None:
     saved_followings = database.get.fetch_followings(inspected_user)
 
@@ -112,10 +119,11 @@ def save_following_changes(
         following_object = database.create.create_following_for_inspected_user(
             inspected_user, following_details
         )
-        if following_object:
+        if not silent and following_object:
             messages.new_following(inspected_user, following_object, save=True)
 
     for unfollowed in new_unfollows:
         get_user_short_object_by_pk(user_following_list, unfollowed)
         unfollowed_object = database.delete.delete_following(inspected_user, unfollowed)
-        messages.new_unfollow(inspected_user, unfollowed_object)
+        if not silent:
+            messages.new_unfollow(inspected_user, unfollowed_object, save=True)

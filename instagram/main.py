@@ -51,7 +51,7 @@ def main():
 
 
 async def run_instagram():
-    print("[✓] Instagram Inspector Executed.")
+    print("[✓] Instagram Inspector Started.")
     while True:
         try:
             main()

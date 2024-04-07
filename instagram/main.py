@@ -50,7 +50,8 @@ def main():
             process_user(client, user, silent=False)
 
 
-if __name__ == "__main__":
+async def run_instagram():
+    print("[✓] Instagram Inspector Executed.")
     while True:
         try:
             main()

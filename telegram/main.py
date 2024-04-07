@@ -8,7 +8,7 @@ from core import database
 from core import settings
 from core.telegram.login import get_bot
 from core.telegram.types import Message, CallbackQuery
-from instagram.main import process_user
+from instagram.main import process_user, run_instagram
 from instagram.utils import get_client
 from telegram.notifications import send_telegram_notifications
 
@@ -25,7 +25,7 @@ logging.basicConfig(
     level=logging.WARNING,
 )
 
-print(f"Telegram Bot [ @{settings.TELEGRAM_BOT_USERNAME} ] Started.")
+print(f"[✓] Telegram Bot [ @{settings.TELEGRAM_BOT_USERNAME} ] Started.")
 logging.info(f"Telegram Bot [ @{settings.TELEGRAM_BOT_USERNAME} ] Started.")
 
 
@@ -276,4 +276,5 @@ async def delete_inspector_query(callback: CallbackQuery):
 
 
 bot.loop.create_task(send_telegram_notifications(bot))
+bot.loop.create_task(run_instagram())
 bot.run_until_disconnected()

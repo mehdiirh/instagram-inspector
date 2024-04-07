@@ -11,7 +11,11 @@ if TYPE_CHECKING:
     from instagrapi.types import User, UserShort
 
 
-def get_client(username: str = None, inspector_id: int = None) -> Client:
+def get_client(
+    username: str = None,
+    inspector_id: int = None,
+    verification_code: str = "",
+) -> Client:
     proxy_settings = database.get.get_setting(key="proxy")
     inspector = database.get.get_inspector(username=username, db_id=inspector_id)
     client = Client()

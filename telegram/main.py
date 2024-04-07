@@ -50,21 +50,50 @@ async def list_inspectors(message: Message):
     inspectors = database.get.get_all_inspectors()
     if not inspectors:
         await message.respond(
-            "No active inspector available. add one with /add_inspector"
+            "**No active inspector available. add one with** /add_inspector"
         )
         raise events.StopPropagation
 
-    text = "**Username:** `{username}`\n**IG ID:** `{ig_pk}`\n\n"
     inspectors_list = "**Active Inspectors:**\n\n"
     for inspector in inspectors:
-        inspectors_list += text.format(
-            **{
-                "username": inspector.username,
-                "ig_pk": inspector.ig_pk,
-            }
+        inspectors_list += (
+            f"**Username:** `{inspector.username}`\n"
+            f"**IG ID:** `{inspector.ig_pk}`\n"
+            f"/ins_{inspector.id}"
         )
 
     await message.respond(inspectors_list)
+    raise events.StopPropagation
+
+
+@bot.on(events.NewMessage(pattern=r"^/ins_(\d+)$"))
+async def inspector_stats(message: Message):
+    """
+    /ins_NUM. like /ins_2
+    """
+
+    inspector_id = message.pattern_match.group(1)
+    inspector = database.get.get_inspector(db_id=inspector_id)
+    if not inspector:
+        raise events.StopPropagation
+
+    inspector_users = database.get.get_inspector_inspected_users(inspector)
+
+    if not inspector_users:
+        await message.respond(
+            "**This inspector does not inspect anyone at the moment.**"
+        )
+        raise events.StopPropagation
+
+    text = f"**Users being inspected by** `{inspector.username}`**:**\n\n"
+    for user in inspector_users:
+        text += (
+            f"**ID:** `{user.ig_pk}`\n"
+            f"**Followers:** `{user.follower_count}`\n"
+            f"**Followings:** `{user.following_count}`\n\n"
+        )
+
+    await message.reply(text)
     raise events.StopPropagation
 
 

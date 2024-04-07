@@ -145,7 +145,7 @@ def error_log(
     template = "error_log.html"
 
     context = {
-        "title": stage,
+        "stage": stage,
         "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "exception": str(exception),
     }

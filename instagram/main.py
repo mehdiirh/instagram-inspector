@@ -1,7 +1,7 @@
 import logging
-from time import sleep
+from asyncio import sleep
 
-from core import database, settings
+from core import database
 from instagram.utils import (
     get_client,
     save_follower_following_count_changes,
@@ -9,14 +9,6 @@ from instagram.utils import (
     save_following_changes,
 )
 from telegram import messages
-
-logging.basicConfig(
-    filename=settings.BASE_DIR / "logs/instagram.log",
-    filemode="a",
-    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d - %H:%M:%S",
-    level=logging.WARNING,
-)
 
 
 def process_user(client, user, silent=False):
@@ -41,6 +33,7 @@ def main():
             messages.error_log(
                 stage=f"Loging-in with user: <code>{inspector.username}</code>",
                 exception=err,
+                save=True,
             )
             continue
 
@@ -57,6 +50,6 @@ async def run_instagram():
             main()
         except Exception as e:
             logging.error(f"Error in processing instagram: {e}", exc_info=True)
-            messages.error_log("Instagram processing", exception=e)
+            messages.error_log("Instagram processing", exception=e, save=True)
 
-        sleep(30 * 60)
+        await sleep(30 * 60)

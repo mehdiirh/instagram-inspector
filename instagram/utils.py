@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from instagrapi import Client
 
-from core import database
+from core import database, settings
 from core.datatypes import UnderInspect
 from telegram import messages
 
@@ -16,12 +16,11 @@ def get_client(
     inspector_id: int = None,
     verification_code: str = "",
 ) -> Client:
-    proxy_settings = database.get.get_setting(key="proxy")
     inspector = database.get.get_inspector(username=username, db_id=inspector_id)
     client = Client()
 
-    if proxy_settings.active:
-        client.set_proxy(proxy_settings.value)
+    if settings.INSTAGRAM_PROXY_USE:
+        client.set_proxy(settings.INSTAGRAM_PROXY_LINK)
 
     try:
         client.set_settings(json.loads(inspector.settings))

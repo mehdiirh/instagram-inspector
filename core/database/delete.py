@@ -7,10 +7,10 @@ from core.database.get import (
     get_inspected_user,
 )
 from core.database.utils import Cursor
-from core.datatypes import Inspector
+from core.datatypes import Inspector, UnderInspect
 
 if TYPE_CHECKING:
-    from core.datatypes import UnderInspect, Follower, Following
+    from core.datatypes import Follower, Following
 
 
 def delete_follower(

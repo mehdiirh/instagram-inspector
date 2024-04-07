@@ -10,13 +10,13 @@ from instagram.utils import (
 def process_user(client, user, silent=False):
     user_info = client.user_info_by_username_v1(user.username)
     user.ig_pk = user_info.pk
-    save_follower_following_count_changes(user, user_info, silent=False)
+    save_follower_following_count_changes(user, user_info, silent=silent)
 
     user_followers = client.user_followers_v1(user_info.pk)
-    save_follower_changes(user, user_followers, silent=False)
+    save_follower_changes(user, user_followers, silent=silent)
 
     user_followings = client.user_following_v1(user_info.pk)
-    save_following_changes(user, user_followings, silent=False)
+    save_following_changes(user, user_followings, silent=silent)
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
         under_inspect_users = database.get.get_inspector_inspected_users(inspector)
 
         for user in under_inspect_users:
-            process_user(client, user)
+            process_user(client, user, silent=False)
 
 
 if __name__ == "__main__":

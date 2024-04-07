@@ -1,4 +1,5 @@
 from typing import Literal
+
 from core.database.utils import dataclass_wrapper, Cursor
 from core.datatypes import (
     Follower,
@@ -51,21 +52,53 @@ def get_inspector_inspected_users(inspector: [int, Inspector]) -> list[UnderInsp
         )
 
 
-@dataclass_wrapper(Follower)
-def fetch_followers(inspected_user_id: int) -> list[Follower]:
+@dataclass_wrapper(Follower, fetchone=True)
+def get_follower(inspected_user: [int, UnderInspect], follower_ig_pk: int) -> Follower:
+    if isinstance(inspected_user, UnderInspect):
+        inspected_user = inspected_user.id
+
     with Cursor(close_on_exit=False) as cursor:
         return cursor.execute(
-            "SELECT id, ig_pk, inspected_user FROM followers WHERE inspected_user=?",
-            (inspected_user_id,),
+            "SELECT id, ig_pk, username, inspected_user FROM followers WHERE inspected_user=? AND ig_pk=?",
+            (inspected_user, follower_ig_pk),
+        )
+
+
+@dataclass_wrapper(Follower)
+def fetch_followers(inspected_user: [int, UnderInspect]) -> list[Follower]:
+    if isinstance(inspected_user, UnderInspect):
+        inspected_user = inspected_user.id
+
+    with Cursor(close_on_exit=False) as cursor:
+        return cursor.execute(
+            "SELECT id, ig_pk, username, inspected_user FROM followers WHERE inspected_user=?",
+            (inspected_user,),
+        )
+
+
+@dataclass_wrapper(Following, fetchone=True)
+def get_following(
+    inspected_user: [int, UnderInspect], following_ig_pk: int
+) -> Follower:
+    if isinstance(inspected_user, UnderInspect):
+        inspected_user = inspected_user.id
+
+    with Cursor(close_on_exit=False) as cursor:
+        return cursor.execute(
+            "SELECT id, ig_pk, username, inspected_user FROM followings WHERE inspected_user=? AND ig_pk=?",
+            (inspected_user, following_ig_pk),
         )
 
 
 @dataclass_wrapper(Following)
-def fetch_followings(inspected_user_id: int) -> list[Following]:
+def fetch_followings(inspected_user: [int, UnderInspect]) -> list[Following]:
+    if isinstance(inspected_user, UnderInspect):
+        inspected_user = inspected_user.id
+
     with Cursor(close_on_exit=False) as cursor:
         return cursor.execute(
-            "SELECT id, ig_pk, inspected_user FROM followings WHERE inspected_user=?",
-            (inspected_user_id,),
+            "SELECT id, ig_pk, username, inspected_user FROM followings WHERE inspected_user=?",
+            (inspected_user,),
         )
 
 

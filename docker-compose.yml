@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  inspector:
+    build:
+      context: .
+
+    container_name: "instagram-inspector"
+    image: "instagram-inspector"
+    command: "python main.py"
+    restart: "unless-stopped"
+    volumes:
+      - ./database.sqlite3:/app/database.sqlite3
+    env_file:
+      - .env

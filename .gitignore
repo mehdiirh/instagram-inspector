@@ -1,5 +1,6 @@
 database.sqlite3
 .idea
+.env
 
 *.pyc
 *.session

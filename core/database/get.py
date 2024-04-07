@@ -20,7 +20,7 @@ def get_all_inspectors() -> list[Inspector]:
 
 
 @dataclass_wrapper(Inspector, fetchone=True)
-def get_inspector(username: str, db_id: int = None) -> Inspector:
+def get_inspector(username: str = None, db_id: int = None) -> Inspector:
     with Cursor(close_on_exit=False) as cursor:
         return cursor.execute(
             "SELECT id, username, password, settings, ig_pk "

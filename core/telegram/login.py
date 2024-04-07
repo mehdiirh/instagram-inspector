@@ -1,7 +1,10 @@
+import socks
 from telethon.sessions.memory import MemorySession
 from telethon.sync import TelegramClient
 
 from core import settings
+
+proxy = (socks.SOCKS5, "localhost", 20170)
 
 
 def get_bot():
@@ -9,6 +12,7 @@ def get_bot():
         MemorySession(),
         settings.TELEGRAM_API_ID,
         settings.TELEGRAM_API_HASH,
+        proxy=proxy,
     )
     return bot.start(bot_token=settings.TELEGRAM_BOT_TOKEN)
 

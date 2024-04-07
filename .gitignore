@@ -1,0 +1,10 @@
+database.sqlite3
+.idea
+
+*.pyc
+*.session
+*.session-journal
+
+**/.DS_Store
+venv/
+/logs/*

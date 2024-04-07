@@ -40,7 +40,9 @@ def follower_count_change(
     new_follower_count: int,
 ) -> TelegramMessage:
     template = "follower_count_change.html"
-    change_type = "increase" if new_follower_count > old_follower_count else "decrease"
+    change_type = (
+        "increased" if new_follower_count > old_follower_count else "decreased"
+    )
 
     context = {
         "inspected_user_username": inspected_user.username,
@@ -60,7 +62,7 @@ def following_count_change(
 ) -> TelegramMessage:
     template = "following_count_change.html"
     change_type = (
-        "increase" if new_following_count > old_following_count else "decrease"
+        "increased" if new_following_count > old_following_count else "decreased"
     )
 
     context = {

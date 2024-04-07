@@ -1,3 +1,4 @@
+import datetime
 from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -130,6 +131,23 @@ def new_unfollowed_by(
     context = {
         "inspected_user_username": inspected_user.username,
         "new_unfollower_username": new_unfollower_object.username,
+    }
+
+    return render_template(template, context)
+
+
+@db_control
+def error_log(
+    stage: str,
+    exception: Exception,
+) -> TelegramMessage:
+
+    template = "error_log.html"
+
+    context = {
+        "title": stage,
+        "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "exception": str(exception),
     }
 
     return render_template(template, context)

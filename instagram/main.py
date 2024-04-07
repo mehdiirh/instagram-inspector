@@ -1,3 +1,5 @@
+from time import sleep
+
 from core import database
 from instagram.utils import (
     get_client,
@@ -5,6 +7,7 @@ from instagram.utils import (
     save_follower_changes,
     save_following_changes,
 )
+from telegram import messages
 
 
 def process_user(client, user, silent=False):
@@ -23,7 +26,15 @@ def main():
     inspectors = database.get.get_all_inspectors()
 
     for inspector in inspectors:
-        client = get_client(inspector.username)
+        try:
+            client = get_client(inspector.username)
+        except Exception as err:
+            messages.error_log(
+                stage=f"Loging-in with user: <code>{inspector.username}</code>",
+                exception=err,
+            )
+            continue
+
         under_inspect_users = database.get.get_inspector_inspected_users(inspector)
 
         for user in under_inspect_users:
@@ -31,4 +42,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    while True:
+        try:
+            main()
+        except Exception as e:
+            messages.error_log("Instagram processing", exception=e)
+
+        sleep(30 * 60)

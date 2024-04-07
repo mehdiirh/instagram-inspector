@@ -59,7 +59,7 @@ async def list_inspectors(message: Message):
         inspectors_list += (
             f"**Username:** `{inspector.username}`\n"
             f"**IG ID:** `{inspector.ig_pk}`\n"
-            f"/ins_{inspector.id}"
+            f"/ins_{inspector.id}\n\n"
         )
 
     await message.respond(inspectors_list)

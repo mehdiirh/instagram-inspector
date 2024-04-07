@@ -5,12 +5,13 @@ from instagrapi import Client
 
 from core import database
 from core.datatypes import UnderInspect
+from telegram import messages
 
 if TYPE_CHECKING:
     from instagrapi.types import User, UserShort
 
 
-def get_client(username: str = None, inspector_id: int = None):
+def get_client(username: str = None, inspector_id: int = None) -> Client:
     proxy_settings = database.get.get_setting(key="proxy")
     inspector = database.get.get_inspector(username=username, db_id=inspector_id)
     client = Client()
@@ -42,14 +43,22 @@ def get_user_short_object_by_pk(
 
 def save_follower_following_count_changes(
     inspected_user: UnderInspect, user_info: "User"
-):
+) -> None:
     if inspected_user.follower_count != user_info.follower_count:
-        # TODO: send notification
-        pass
+        messages.follower_count_change(
+            inspected_user,
+            inspected_user.follower_count,
+            user_info.follower_count,
+            save=True,
+        )
 
     if inspected_user.following_count != user_info.following_count:
-        # TODO: notification
-        pass
+        messages.following_count_change(
+            inspected_user,
+            inspected_user.following_count,
+            user_info.following_count,
+            save=True,
+        )
 
     inspected_user.follower_count = user_info.follower_count
     inspected_user.following_count = user_info.following_count
@@ -69,16 +78,17 @@ def save_follower_changes(
     new_unfollows = set(saved_followers_pks) - set(fresh_followers_pks)
 
     for follower in new_followers:
-        # TODO: Send notification
         follower_details = get_user_short_object_by_pk(user_follower_list, follower)
-        database.create.create_follower_for_inspected_user(
+        follower_object = database.create.create_follower_for_inspected_user(
             inspected_user, follower_details
         )
+        if follower_object:
+            messages.new_follower(inspected_user, follower_object, save=True)
 
-    for unfollow in new_unfollows:
-        # TODO: Send notification
-        # TODO: delete follower from db
-        pass
+    for unfollower in new_unfollows:
+        get_user_short_object_by_pk(user_follower_list, unfollower)
+        unfollower_object = database.delete.delete_follower(inspected_user, unfollower)
+        messages.new_unfollowed_by(inspected_user, unfollower_object)
 
 
 def save_following_changes(
@@ -93,14 +103,15 @@ def save_following_changes(
     new_followings = set(fresh_followings_pks) - set(saved_followings_pks)
     new_unfollows = set(saved_followings_pks) - set(fresh_followings_pks)
 
-    for follower in new_followings:
-        # TODO: Send notification
-        follower_details = get_user_short_object_by_pk(user_following_list, follower)
-        database.create.create_following_for_inspected_user(
-            inspected_user, follower_details
+    for following in new_followings:
+        following_details = get_user_short_object_by_pk(user_following_list, following)
+        following_object = database.create.create_following_for_inspected_user(
+            inspected_user, following_details
         )
+        if following_object:
+            messages.new_following(inspected_user, following_object, save=True)
 
-    for unfollow in new_unfollows:
-        # TODO: Send notification
-        # TODO: delete follower from db
-        pass
+    for unfollowed in new_unfollows:
+        get_user_short_object_by_pk(user_following_list, unfollowed)
+        unfollowed_object = database.delete.delete_following(inspected_user, unfollowed)
+        messages.new_unfollow(inspected_user, unfollowed_object)

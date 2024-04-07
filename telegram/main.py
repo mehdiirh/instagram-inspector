@@ -88,7 +88,7 @@ async def inspector_stats(message: Message):
     text = f"**Users being inspected by** `{inspector.username}`**:**\n\n"
     for user in inspector_users:
         text += (
-            f"**Username:** [{user.username}](https://instagram.com/{user.username})"
+            f"**Username:** [{user.username}](https://instagram.com/{user.username})\n"
             f"**ID:** `{user.ig_pk}`\n"
             f"**Followers:** `{user.follower_count}`\n"
             f"**Followings:** `{user.following_count}`\n\n"

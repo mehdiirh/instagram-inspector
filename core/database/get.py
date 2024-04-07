@@ -103,14 +103,16 @@ def fetch_followings(inspected_user: [int, UnderInspect]) -> list[Following]:
 
 
 @dataclass_wrapper(TelegramMessage)
-def telegram_messages(status: Literal[0, 1] = None):
+def telegram_messages(status: Literal[0, 1] = None) -> list[TelegramMessage]:
     with Cursor(close_on_exit=False) as cursor:
         if status is None:
-            cursor.execute("SELECT id, text, media_url, status FROM telegram_message")
+            return cursor.execute(
+                "SELECT id, text, media_url, status FROM telegram_message"
+            )
         else:
             return cursor.execute(
-                "SELECT id, text, media_url, status FROM telegram_message WHERE status = ?",
-                status,
+                "SELECT id, text, media_url, status FROM telegram_message WHERE status=?",
+                str(status),
             )
 
 

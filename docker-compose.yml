@@ -10,6 +10,14 @@ services:
     command: "python main.py"
     restart: "unless-stopped"
     volumes:
-      - ./database.sqlite3:/app/database.sqlite3
+      - type: bind
+        source: ./database.sqlite3
+        target: /app/database.sqlite3
+      - ./logs/*:/app/logs/*
     env_file:
       - .env
+
+volumes:
+  database:
+    driver: local
+

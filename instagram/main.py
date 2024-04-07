@@ -16,10 +16,26 @@ def process_user(client, user, silent=False):
     user.ig_pk = user_info.pk
     save_follower_following_count_changes(user, user_info, silent=silent)
 
-    user_followers = client.user_followers_v1(user_info.pk)
+    user_followers = []
+    for _ in range(6):
+        _user_followers = client.user_followers_v1(user_info.pk)
+        user_followers += _user_followers
+        user_followers = list(set(user_followers))
+
+        if len(user_followers) == user_info.follower_count:
+            break
+
     save_follower_changes(user, user_followers, silent=silent)
 
-    user_followings = client.user_following_v1(user_info.pk)
+    user_followings = []
+    for _ in range(6):
+        _user_followings = client.user_following_v1(user_info.pk)
+        user_followings += _user_followings
+        user_followings = list(set(user_followings))
+
+        if len(user_followings) == user_info.following_count:
+            break
+
     save_following_changes(user, user_followings, silent=silent)
 
 

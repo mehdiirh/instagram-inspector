@@ -25,6 +25,7 @@ class UnderInspect:
 class Follower:
     id: int
     ig_pk: int
+    username: str
     inspected_user: int
 
 
@@ -32,6 +33,7 @@ class Follower:
 class Following:
     id: int
     ig_pk: int
+    username: str
     inspected_user: int
 
 

@@ -98,13 +98,14 @@ async def inspector_stats(message: Message):
     raise events.StopPropagation
 
 
-@bot.on(events.NewMessage(pattern=r"^/add_inspector"))
+@bot.on(events.NewMessage(pattern=r"^(?:/add_inspector|/relogin)"))
 async def add_inspector(message: Message):
     """
     /add_inspector USERNAME PASSWORD [2FA_CODE]
     """
 
     data = message.text.split()
+    is_re_login = data[0] == "/relogin"
 
     try:
         username = data[1]
@@ -120,6 +121,25 @@ async def add_inspector(message: Message):
     except IndexError:
         verification_code = ""
 
+    if is_re_login:
+        inspector_object = database.get.get_inspector(username)
+        if not inspector_object:
+            await message.edit(
+                f"**Inspector** `{username}` **does not exists.**",
+                buttons=Button.clear(),
+            )
+            raise events.StopPropagation
+        inspector_object.username = username
+        inspector_object.password = password
+        database.update.update_inspector(inspector_object)
+
+    else:
+        try:
+            inspector_object = database.create.create_inspector(username, password)
+        except ValueError as e:
+            await message.reply(e.args[0])
+            raise events.StopPropagation
+
     wait_message = await message.respond(
         message=(
             "**Logining-in to instagram using:**\n"
@@ -131,13 +151,12 @@ async def add_inspector(message: Message):
     )
 
     try:
-        inspector_object = database.create.create_inspector(username, password)
-    except ValueError as e:
-        await wait_message.reply(e.args[0])
-        raise events.StopPropagation
-
-    try:
-        get_client(username, inspector_object.id, verification_code=verification_code)
+        get_client(
+            username,
+            inspector_object.id,
+            verification_code=verification_code,
+            reloing=is_re_login,
+        )
     except Exception as e:
         logging.error(f"Error loging-in to {username}: {e}", exc_info=True)
         await wait_message.reply(f"Error loging-in to {username}:\n `{e}`")

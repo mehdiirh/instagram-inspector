@@ -15,6 +15,7 @@ def get_client(
     username: str = None,
     inspector_id: int = None,
     verification_code: str = "",
+    reloing: bool = False,
 ) -> Client:
     inspector = database.get.get_inspector(username=username, db_id=inspector_id)
     client = Client()
@@ -24,11 +25,14 @@ def get_client(
 
     try:
         client.set_settings(json.loads(inspector.settings))
-        client.login(inspector.username, inspector.password)
+        client.login(inspector.username, inspector.password, relogin=reloing)
         client.login()
     except Exception:
         client.login(
-            inspector.username, inspector.password, verification_code=verification_code
+            inspector.username,
+            inspector.password,
+            verification_code=verification_code,
+            relogin=reloing,
         )
         inspector.settings = json.dumps(client.get_settings())
         inspector.ig_pk = client.user_id

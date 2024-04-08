@@ -403,9 +403,8 @@ async def prune_database_query(callback: CallbackQuery):
         )
 
     if confirm == "1":
-        await callback.edit("Pruning...", buttons=Button.clear())
         database.delete.prune_database()
-        await callback.edit("Database has been cleaned up.")
+        await callback.edit("Database has been cleaned up.", buttons=Button.clear())
 
     raise events.StopPropagation
 

@@ -50,7 +50,7 @@ async def list_inspectors(message: Message):
     inspectors = database.get.get_all_inspectors()
     if not inspectors:
         await message.respond(
-            "**No active inspector available. add one with** /add_inspector"
+            "**No active inspector available. Add one with** /add_inspector"
         )
         raise events.StopPropagation
 
@@ -63,6 +63,70 @@ async def list_inspectors(message: Message):
         )
 
     await message.respond(inspectors_list)
+    raise events.StopPropagation
+
+
+@bot.on(events.NewMessage(pattern=r"^/inspected_users"))
+async def inspected_users_text(message: Message):
+    """
+    /inspected_users
+    """
+
+    inspected_users = database.get.get_all_inspected_users()
+    if not inspected_users:
+        await message.respond(
+            "**No active under inspect user available. Add one with** /inspect"
+        )
+        raise events.StopPropagation
+
+    text = "**Active Inspectors:**\n\n"
+    for inspected_user in inspected_users:
+        user_inspector = database.get.get_inspector(db_id=inspected_user.inspector)
+
+        if not user_inspector:
+            inspected_user.inspector = None
+            database.update.update_inspected_user(inspected_user)
+
+        text += (
+            f"**Username:** [{inspected_user.username}](https://instagram.com/{inspected_user.username})\n"
+            f"**ID:** `{inspected_user.ig_pk}`\n"
+            f"**Followers:** `{inspected_user.follower_count}`\n"
+            f"**Followings:** `{inspected_user.following_count}`\n"
+            f"**Inspector:** `{user_inspector.username if user_inspector else '-'}`\n"
+            f"/reassign_{inspected_user.id}  /delu_{inspected_user.id}\n\n"
+        )
+
+    await message.respond(text)
+    raise events.StopPropagation
+
+
+@bot.on(events.NewMessage(pattern=r"^/reassign_(\d+)$"))
+async def reassign_inspected_user(message: Message):
+    """
+    /reassign_NUM. like /ins_2
+    """
+
+    inspected_user_id = message.pattern_match.group(1)
+    inspected_user = database.get.get_inspected_user(db_id=inspected_user_id)
+    if not inspected_user:
+        raise events.StopPropagation
+
+    inspectors = database.get.get_all_inspectors()
+    if not inspectors:
+        await message.respond("No active inspector available.")
+        raise events.StopPropagation
+
+    text = "**Select the inspector you want assign to this user:**"
+    buttons = [
+        [
+            Button.inline(
+                inspector.username, f"reassign:{inspector.id}:{inspected_user.id}"
+            )
+        ]
+        for inspector in inspectors
+    ]
+
+    await message.respond(text, buttons=buttons)
     raise events.StopPropagation
 
 
@@ -91,7 +155,8 @@ async def inspector_stats(message: Message):
             f"**Username:** [{user.username}](https://instagram.com/{user.username})\n"
             f"**ID:** `{user.ig_pk}`\n"
             f"**Followers:** `{user.follower_count}`\n"
-            f"**Followings:** `{user.following_count}`\n\n"
+            f"**Followings:** `{user.following_count}`\n"
+            f"/reassign_{user.id}\n\n"
         )
 
     await message.reply(text, link_preview=False)
@@ -112,7 +177,8 @@ async def add_inspector(message: Message):
         password = data[2]
     except IndexError:
         await message.respond(
-            "**Usage:**\n`/add_inspector USERNAME PASSWORD [2FA_CODE]`"
+            f"**Usage:**\n "
+            f"{'/relogin' if is_re_login else '/add_inspector'} USERNAME PASSWORD [2FA_CODE]`"
         )
         raise events.StopPropagation
 
@@ -192,6 +258,7 @@ async def inspect_text(message: Message):
     """
     /inspect USERNAME
     """
+
     try:
         user_username = message.text.split()[1]
     except IndexError:
@@ -221,6 +288,28 @@ async def inspect_text(message: Message):
         for inspector in inspectors
     ]
     await message.respond(text, buttons=buttons)
+    raise events.StopPropagation
+
+
+@bot.on(events.NewMessage(pattern="^/prune$$"))
+async def prune_database_text(message: Message):
+    """
+    /prune
+    """
+
+    await message.respond(
+        "**Pruning the database will delete all orphan inspected users "
+        "and their follower/following list from the database."
+        "\n"
+        "\n"
+        "Are you sure you want to continue?**",
+        buttons=[
+            [
+                Button.inline("Confirm", "prune:1"),
+                Button.inline("Cancel", "prune:0"),
+            ]
+        ],
+    )
     raise events.StopPropagation
 
 
@@ -277,6 +366,53 @@ async def inspect_query(callback: CallbackQuery):
         f"**Followings:** `{user.following_count}`\n"
         f"\n"
         f"A list of all followers and followings have been added to database"
+    )
+    raise events.StopPropagation
+
+
+@bot.on(events.CallbackQuery(pattern="^prune:([01])$"))
+async def prune_database_query(callback: CallbackQuery):
+    confirm = callback.pattern_match.group(1)
+
+    if confirm == "0":
+        await callback.edit(
+            "Pruning database has been canceled.", buttons=Button.clear()
+        )
+
+    if confirm == "1":
+        await callback.edit("Pruning...", buttons=Button.clear())
+        database.delete.prune_database()
+        await callback.edit("Database has been cleaned up.")
+
+    raise events.StopPropagation
+
+
+@bot.on(events.CallbackQuery(pattern="^reassign:(\d+):(\d+)$"))
+async def reassign_inspected_user_query(callback: CallbackQuery):
+    inspector_id = callback.pattern_match.group(1).decode()
+    inspected_user_id = callback.pattern_match.group(2).decode()
+
+    inspector = database.get.get_inspector(db_id=inspector_id)
+    if not inspector:
+        await callback.edit(
+            f"**Inspector does not exists.**",
+            buttons=Button.clear(),
+        )
+        raise events.StopPropagation
+
+    inspected_user = database.get.get_inspected_user(db_id=inspected_user_id)
+    if not inspected_user:
+        await callback.edit(
+            f"**Inspected user does not exists.**",
+            buttons=Button.clear(),
+        )
+        raise events.StopPropagation
+
+    inspected_user.inspector = inspector.id
+    database.update.update_inspected_user(inspected_user)
+    await callback.edit(
+        f"**User** [{inspected_user.username}](https://instagram.com/{inspected_user.username}) "
+        f"**has been successfully assigned to** `{inspector.username}`."
     )
     raise events.StopPropagation
 

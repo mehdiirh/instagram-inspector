@@ -1,4 +1,4 @@
-![Black](https://github.com/mehdiirh/instagram-inspector/actions/workflows/black.yml/badge.svg)
+[![Black](https://github.com/mehdiirh/instagram-inspector/actions/workflows/black.yml/badge.svg)](https://github.com/mehdiirh/instagram-inspector/actions/workflows/black.yml)
 
 # 🤖 Instagram Inspector
 ### Inspect users on Instagram. Get notifications on Telegram when they follow/unfollow someone.

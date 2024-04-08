@@ -25,6 +25,8 @@ cp database-sample.sqlite3 database.sqlite3
 
 | Env Key               | Value                                                              |
 |:----------------------|--------------------------------------------------------------------|
+| INSTAGRAM_PROXY_LINK  | [Optional] HTTP proxy link                                         |
+| INSTAGRAM_PROXY_USE   | True / False                                                       |
 | TELEGRAM_BOT_USERNAME | Your telegram bot username                                         |
 | TELEGRAM_BOT_TOKEN    | Your telegram bot token                                            |
 | TELEGRAM_SUDO_IDS     | Comma-separated sudo IDs - [See your ID](https://t.me/userinfobot) |

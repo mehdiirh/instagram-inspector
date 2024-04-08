@@ -1,3 +1,5 @@
+![Black](https://github.com/mehdiirh/instagram-inspector/actions/workflows/black.yml/badge.svg)
+
 # 🤖 Instagram Inspector
 ### Inspect users on Instagram. Get notifications on Telegram when they follow/unfollow someone.
 

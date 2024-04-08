@@ -201,7 +201,7 @@ async def add_inspector(message: Message):
     except IndexError:
         await message.respond(
             f"**Usage:**\n "
-            f"{'/relogin' if is_re_login else '/add_inspector'} USERNAME PASSWORD [2FA_CODE]`"
+            f"`{'/relogin' if is_re_login else '/add_inspector'} USERNAME PASSWORD [2FA_CODE]`"
         )
         raise events.StopPropagation
 

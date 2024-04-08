@@ -103,7 +103,7 @@ async def inspected_users_text(message: Message):
 @bot.on(events.NewMessage(pattern=r"^/reassign_(\d+)$"))
 async def reassign_inspected_user(message: Message):
     """
-    /reassign_NUM. like /ins_2
+    /reassign_NUM. like /reassign_2
     """
 
     inspected_user_id = message.pattern_match.group(1)
@@ -127,6 +127,29 @@ async def reassign_inspected_user(message: Message):
     ]
 
     await message.respond(text, buttons=buttons)
+    raise events.StopPropagation
+
+
+@bot.on(events.NewMessage(pattern=r"^/delu_(\d+)$"))
+async def delete_inspected_user(message: Message):
+    """
+    /delu_NUM. like /delu_2
+    """
+
+    inspected_user_id = message.pattern_match.group(1)
+    inspected_user = database.get.get_inspected_user(db_id=inspected_user_id)
+    if not inspected_user:
+        raise events.StopPropagation
+
+    await message.respond(
+        f"**Are you sure you want to delete** `{inspected_user.username}` **?**",
+        buttons=[
+            [
+                Button.inline("Delete", f"delu:{inspected_user.id}:1"),
+                Button.inline("Cancel", f"delu:{inspected_user.id}:0"),
+            ]
+        ],
+    )
     raise events.StopPropagation
 
 
@@ -372,7 +395,7 @@ async def inspect_query(callback: CallbackQuery):
 
 @bot.on(events.CallbackQuery(pattern="^prune:([01])$"))
 async def prune_database_query(callback: CallbackQuery):
-    confirm = callback.pattern_match.group(1)
+    confirm = callback.pattern_match.group(1).decode()
 
     if confirm == "0":
         await callback.edit(
@@ -415,6 +438,35 @@ async def reassign_inspected_user_query(callback: CallbackQuery):
         f"**has been successfully assigned to** `{inspector.username}`."
     )
     raise events.StopPropagation
+
+
+@bot.on(events.CallbackQuery(pattern="^delu:(\d+):([01])$"))
+async def delete_inspector_query(callback: CallbackQuery):
+    inspected_user_id = callback.pattern_match.group(1).decode()
+    confirm = callback.pattern_match.group(2).decode()
+
+    inspected_user = database.get.get_inspected_user(db_id=inspected_user_id)
+    if not inspected_user:
+        await callback.edit(
+            f"**User does not exists.**",
+            buttons=Button.clear(),
+        )
+        raise events.StopPropagation
+
+    if confirm == "0":
+        await callback.edit(
+            f"**Deletion of** `{inspected_user.username}` **has been canceled.**",
+            buttons=Button.clear(),
+        )
+        raise events.StopPropagation
+
+    if confirm == "1":
+        database.delete.delete_inspected_user(inspected_user)
+        await callback.edit(
+            f"**User** `{inspected_user.username}` **has been deleted.**",
+            buttons=Button.clear(),
+        )
+        raise events.StopPropagation
 
 
 @bot.on(events.CallbackQuery(pattern="^del:(\w[\w.]+):?([01])?$"))

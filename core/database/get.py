@@ -19,6 +19,15 @@ def get_all_inspectors() -> list[Inspector]:
         )
 
 
+@dataclass_wrapper(UnderInspect)
+def get_all_inspected_users() -> list[UnderInspect]:
+    with Cursor(close_on_exit=False) as cursor:
+        return cursor.execute(
+            "SELECT id, username, following_count, follower_count, ig_pk, inspector "
+            "FROM under_inspect"
+        )
+
+
 @dataclass_wrapper(Inspector, fetchone=True)
 def get_inspector(username: str = None, db_id: int = None) -> Inspector:
     with Cursor(close_on_exit=False) as cursor:

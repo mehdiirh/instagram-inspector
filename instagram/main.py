@@ -56,7 +56,19 @@ def main():
         under_inspect_users = database.get.get_inspector_inspected_users(inspector)
 
         for user in under_inspect_users:
-            process_user(client, user, silent=False)
+            try:
+                process_user(client, user, silent=False)
+            except Exception as e:
+                logging.error(
+                    f"Error in processing user [{user.username}] "
+                    f"using inspector [{inspector.username}]: {e}",
+                    exc_info=True,
+                )
+                messages.error_log(
+                    f"User Processing [{inspector.username}] -> [{user.username}]",
+                    exception=e,
+                    save=True,
+                )
 
 
 async def run_instagram():

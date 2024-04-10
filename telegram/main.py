@@ -371,6 +371,7 @@ async def inspect_query(callback: CallbackQuery):
     except Exception as e:
         logging.error(f"Error loging-in with {inspector.username}", exc_info=True)
         await callback.respond(f"Error loging-in with {inspector.username}:\n {e}")
+        database.delete.delete_inspector(inspector)
         raise events.StopPropagation
 
     try:
@@ -378,6 +379,7 @@ async def inspect_query(callback: CallbackQuery):
     except Exception as e:
         logging.error(f"Error processing user {user.username}", exc_info=True)
         await callback.respond(f"Error processing user {user.username}:\n {e}")
+        database.delete.delete_inspector(inspector)
         raise events.StopPropagation
 
     user = database.get.get_inspected_user(user.username)
